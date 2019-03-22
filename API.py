@@ -1,8 +1,9 @@
 from flask import Flask, request
 from flask_restful import Resource, Api
-from bson.json_util import dumps
+from json import JSONEncoder
 from bson import ObjectId
 import pymongo
+import time
 
 app = Flask(__name__)
 api = Api(app)
@@ -16,13 +17,29 @@ class Blabber(Resource):
     
     def get(self):
         """GET all blabs"""
-        return dumps(blabs.find()), 200
+        createdSince = request.args.get("createdSince")
+        if not createdSince:
+            createdSince  = 0
+        else:
+            createdSince = float(createdSince)
+
+        items = list(blabs.find({"postTime": {"$gt": createdSince}}))
+        # Need to convert ObjectId's to strings or else JSON will throw 85 errors
+        for i, v in enumerate(items):
+            items[i]["id"] = str(v["_id"])
+            del items[i]["_id"]
+
+        return items, 200
 
     def post(self):
         """POST a new blab"""
         post = request.get_json()
+        post["postTime"] = time.time()
         _id = blabs.insert_one(post).inserted_id
-        blab = dumps(blabs.find({"_id": _id}))
+
+        blab = blabs.find_one({"_id": ObjectId(_id)})
+        blab["id"] = str(blab["_id"])
+        del blab["_id"]
 
         return blab, 201
 
@@ -39,9 +56,10 @@ class Blabber_edit(Resource):
         else:
             return '', 404
 
-
+# Add routes/endpoints
 api.add_resource(Blabber, '/blabs')
 api.add_resource(Blabber_edit, '/blabs/<blab_id>')
 
+# Run the app
 if __name__ == '__main__':
     app.run(host="0.0.0.0", port=3000)
