@@ -1,6 +1,5 @@
 from flask import Flask, request
 from flask_restful import Resource, Api
-from json import JSONEncoder
 from bson import ObjectId
 import pymongo
 import time

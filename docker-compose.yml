@@ -1,16 +1,30 @@
 version: '3.6'
 
 services:
-  api:
-    build: .
-    ports:
-      - 3000:3000
-    depends_on:
-      - db
+  reverse-proxy:
+      image: traefik
+      command: --api --docker
+      ports:
+        - "80:80"
+        - "8080:8080"
+      volumes:
+        - /var/run/docker.sock:/var/run/docker.sock
   db:
     image: mongo
     volumes:
       - mongo-blabs:/data/db
+  api:
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      - FLASK_ENV=development
+    labels:
+      - "traefik.frontend.rule=Path: /api/blabs; ReplacePath: /blabs"
+  web:
+    image: vtcs2304s19/blabber-client
+    labels:
+      - "traefik.frontend.rule=Host:localhost"
 
 volumes:
   mongo-blabs:
