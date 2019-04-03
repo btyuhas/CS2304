@@ -1,0 +1,22 @@
+version: "3.6"
+
+services:
+  api:
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      - FLASK_ENV=development
+  db:
+    image: mongo
+    volumes:
+      - mongo-blabs:/data/db
+
+  tests:
+    image: vtcs2304s19/blabber-api-tests
+    environment:
+      SERVICE_NAME: api
+      API_PORT: "3000"
+
+volumes:
+  mongo-blabs:
