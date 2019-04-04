@@ -14,7 +14,7 @@ services:
     volumes:
       - mongo-blabs:/data/db
   api:
-    build: .
+    image: btyuhas/blabber-api:1.0
     ports:
       - "3000:3000"
     environment:
