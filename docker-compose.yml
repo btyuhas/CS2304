@@ -21,10 +21,11 @@ services:
       - FLASK_ENV=development
     labels:
       - "traefik.frontend.rule=Path: /api/blabs; ReplacePath: /blabs"
+
   web:
     image: vtcs2304s19/blabber-client
     labels:
-      - "traefik.frontend.rule=Host:localhost"
+      - "traefik.frontend.rule=PathPrefix:/"
 
 volumes:
   mongo-blabs:
