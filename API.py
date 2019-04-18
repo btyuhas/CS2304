@@ -4,7 +4,7 @@ from bson import ObjectId
 import pymongo
 import time
 
-with open("/run/secrets/hostname.txt") as f:
+with open("/run/secrets/hostname") as f:
     host = f.read()
 
 app = Flask(__name__)
