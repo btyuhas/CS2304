@@ -4,10 +4,13 @@ from bson import ObjectId
 import pymongo
 import time
 
+with open("/run/secrets/hostname.txt") as f:
+    host = f.read()
+
 app = Flask(__name__)
 api = Api(app)
 
-client = pymongo.MongoClient("db", 27017)
+client = pymongo.MongoClient(host, 27017)
 db = client['database']
 blabs = db['blabs']
 

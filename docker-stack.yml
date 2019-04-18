@@ -3,21 +3,25 @@ version: '3.6'
 services:
   reverse-proxy:
     image: traefik
-    command: --api --docker
+    command: --api --docker --docker.swarmMode --docker.watch
     ports:
-      - "80:80"
-      - "8080:8080"
+      - 80:80
+      - 8080:8080
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
     deploy:
       placement:
         constraints:
           - node.role == manager
+
   db:
     image: mongo
     volumes:
       - mongo-blabs:/data/db
     deploy:
+      labels:
+        traefik.port: 27017
+        traefik.backend: "db"
       placement:
         constraints:
           - node.role == worker
@@ -25,13 +29,16 @@ services:
   api:
     image: btyuhas/blabber-api:1.0
     ports:
-      - "3000:3000"
+      - 3000:3000
     environment:
       - FLASK_ENV=development
-    labels:
-      - "traefik.port=3000"
-      - "traefik.frontend.rule=Path: /api/blabs; ReplacePath: /blabs"
+    secrets:
+      - hostname
     deploy:
+      labels:
+        traefik.port: 3000
+        traefik.frontend.rule: "PathPrefixStrip:/api"
+        traefik.backend: "api"
       replicas: 2
       placement:
         constraints:
@@ -39,10 +46,11 @@ services:
 
   web:
     image: vtcs2304s19/blabber-client
-    labels:
-      - "traefik.port=80"
-      - "traefik.frontend.rule=PathPrefix:/"
+    
     deploy:
+      labels:
+        traefik.port: 80
+        traefik.frontend.rule: "PathPrefix:/"
       replicas: 2
       placement:
         constraints:
@@ -51,3 +59,7 @@ services:
 
 volumes:
   mongo-blabs:
+
+secrets:
+  hostname:
+    file: ./hostname.txt
