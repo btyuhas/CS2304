@@ -5,8 +5,8 @@ services:
       image: traefik
       command: --api --docker
       ports:
-        - "80:80"
-        - "8080:8080"
+        - 80:80
+        - 8080:8080
       volumes:
         - /var/run/docker.sock:/var/run/docker.sock
   db:
@@ -16,16 +16,14 @@ services:
   api:
     image: btyuhas/blabber-api:1.0
     ports:
-      - "3000:3000"
-    environment:
-      - FLASK_ENV=development
+      - 3000:3000
     labels:
-      - "traefik.frontend.rule=Path: /api/blabs; ReplacePath: /blabs"
+      traefik.frontend.rule: "PathPrefixStrip:/api"
 
   web:
     image: vtcs2304s19/blabber-client
     labels:
-      - "traefik.frontend.rule=PathPrefix:/"
+      traefik.frontend.rule: "PathPrefix:/"
 
 volumes:
   mongo-blabs:

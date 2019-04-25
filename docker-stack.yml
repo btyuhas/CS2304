@@ -13,11 +13,13 @@ services:
       placement:
         constraints:
           - node.role == manager
-
   db:
     image: mongo
     volumes:
       - mongo-blabs:/data/db
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: $DB_USERNAME
+      MONGO_INITDB_ROOT_PASSWORD: $DB_PASSWORD
     deploy:
       labels:
         traefik.port: 27017
@@ -27,11 +29,12 @@ services:
           - node.role == worker
 
   api:
-    image: btyuhas/blabber-api:1.2
+    image: btyuhas/blabber-api
     environment:
       - FLASK_ENV=development
     secrets:
-      - hostname
+      - auth
+    read_only: true
     deploy:
       labels:
         traefik.port: 3000
@@ -41,10 +44,10 @@ services:
       placement:
         constraints:
           - node.role == worker
+      
 
   web:
     image: vtcs2304s19/blabber-client
-    
     deploy:
       labels:
         traefik.port: 80
@@ -53,11 +56,11 @@ services:
       placement:
         constraints:
           - node.role == worker
-
+      
 
 volumes:
   mongo-blabs:
 
 secrets:
-  hostname:
-    file: ./hostname.txt
+  auth:
+    file: ${AUTH_FILE}
