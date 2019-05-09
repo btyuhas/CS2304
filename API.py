@@ -1,5 +1,7 @@
 from flask import Flask, request
 from flask_restful import Resource, Api
+from werkzeug.wsgi import DispatcherMiddleware
+from prometheus_client import make_wsgi_app 
 from bson import ObjectId
 import pymongo
 import time
@@ -64,6 +66,11 @@ class Blabber_edit(Resource):
 # Add routes/endpoints
 api.add_resource(Blabber, '/blabs')
 api.add_resource(Blabber_edit, '/blabs/<blab_id>')
+
+# Add /metrics endpoint
+app_dispatch = DispatcherMiddleware(app, {
+    '/metrics': make_wsgi_app()
+})
 
 # Run the app
 if __name__ == '__main__':
